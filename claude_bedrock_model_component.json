@@ -1,0 +1,12 @@
+{
+    "name": "Claude-Sonnet-4-Bedrock",
+    "description": "Anthropic Claude Sonnet 4 via AWS Bedrock (SSO Profile)",
+    "component_type": "model",
+    "config": [
+        {
+            "model": "anthropic.claude-sonnet-4-20250514-v1:0",
+            "api_type": "bedrock",
+            "aws_region": "us-east-1"
+        }
+    ]
+}
