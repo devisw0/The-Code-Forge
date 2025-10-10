@@ -1,34 +1,32 @@
-import os
-from autogen import AssistantAgent
-from typing_extensions import Annotated
 import autogen
-import json
-from autogen_ext.models.anthropic import AnthropicBedrockChatCompletionClient
-import asyncio
 
-config_list_bedrock = [{
-    "model": "anthropic.claude-sonnet-4-20250514-v1:0", 
+config_list = [{
+    "model": 'anthropic.claude-3-5-sonnet-20240620-v1:0',  
     "api_type": "bedrock",
-    "aws_region": os.environ.get("AWS_REGION", "us-east-1"),
+    "aws_region": "us-east-1",
+    "aws_profile_name": "devan2"
 }]
 
-llm_config_claude = {
-    "config_list": config_list_bedrock,
-    "temperature": 0.1,
-    "timeout": 120,
-}
+#assistant agent instance from autogen (performs task vs user proxy serves as poc form user and communicates back)
+assistant = autogen.AssistantAgent(
+    name="assistant",
+    llm_config={"config_list": config_list}
+)
 
-async def main():  # ⬅️ Add async here
-    assistant = AssistantAgent(
-        name="ClaudeAssistant",
-        system_message="You are a meticulous developer...",
-        llm_config=llm_config_claude,
-    )
-    
-    result = await assistant.run(task="whats 9+9")  # ⬅️ Add await here
-    print(result)
-    print(result.messages)
-    print(result.messages[-1].content)
+#user proxy (user)
+user_proxy = autogen.UserProxyAgent(
+    name="user_proxy",
+    human_input_mode="NEVER",
+    max_consecutive_auto_reply=1,
+    code_execution_config=False
+)
 
-if __name__ == '__main__':
-    asyncio.run(main())  # ⬅️ Use asyncio.run()
+# Start a conversation
+print("Starting conversation with Bedrock-powered agent...\n")
+
+user_proxy.initiate_chat(
+    assistant,
+    message="Hello! What's the capital of France? Please be brief."
+)
+
+print("\n✅ Success! Your first AutoGen + Bedrock agent works!")
