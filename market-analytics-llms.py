@@ -1,4 +1,7 @@
 import autogen
+from duckduckgo_search import DDGS
+from bs4 import BeautifulSoup
+import requests
 
 #llm config
 config_list = [{
@@ -11,6 +14,33 @@ config_list = [{
 llm_config = {"config_list": config_list, "cache_seed": 42}
 
 
+def get_company_news(company_name: str) -> str:
+    """
+    Searches online for recent news about a given company
+    and returns the top 3 headlines.
+    """
+    # Print a message to the console to show the tool is running
+    print(f"\n EXECUTING TOOL: get_company_news for {company_name} \n")
+    
+    results = []
+    try:
+        # Use DuckDuckGo Search to find news articles
+        with DDGS() as ddgs:
+            search_results = list(ddgs.news(f"{company_name} business news", max_results=5))
+
+        if not search_results:
+            return f"No recent news found for {company_name}."
+
+        # Format the top 3 headlines
+        for i, result in enumerate(search_results[:3]):
+            results.append(f"{i+1}. {result['title']}")
+        
+        return "\n".join(results)
+    except Exception as e:
+        return f"An error occurred while searching for news: {e}"
+
+
+
 #Agents
 
 #user proxy excutres functions (if needed) and acts as poc for user to agents
@@ -18,6 +48,7 @@ user_proxy = autogen.UserProxyAgent(
     name="VP_of_Innovation",
     system_message="A human executive who wants a market analysis for a new product.",
     code_execution_config=False,
+    code_execution_config={"work_dir": "coding"},
     human_input_mode="NEVER",
     # **** CHANGE 1: ADD TERMINATION LOGIC ****
     # This tells the UserProxy that if it sees a message with "TERMINATE" in it, the task is done.
@@ -44,6 +75,8 @@ swot_analyst = autogen.AssistantAgent(
     system_message="""You are a business analyst. Your job is to take the market research findings
     and create a structured SWOT analysis (Strengths, Weaknesses, Opportunities, Threats).
     Only perform the SWOT analysis. Do not critique it or write a final report.
+
+    You also have a tool called 'get_company_news'. Use it for searching up major competing companies
     """,
 )
 
@@ -69,6 +102,14 @@ report_writer = autogen.AssistantAgent(
     After your summary, you MUST end your message with the single word 'TERMINATE'.
     """,
 )
+
+autogen.register_function(
+    get_company_news,
+    caller=swot_analyst,       # The agent that can ask to use the tool
+    executor=user_proxy,        # The agent that will run the tool
+    description="Search for recent news about a company to inform the SWOT analysis.",
+)
+
 
 #making manager, and gc
 agents = [user_proxy, researcher, swot_analyst, critique, report_writer]
