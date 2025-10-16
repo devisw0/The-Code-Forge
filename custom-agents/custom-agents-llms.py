@@ -50,35 +50,41 @@ class MathAgentBlueprint(RoutedAgent):
             result = await self.model_config.create(messages=[UserMessage(content = prompt, source='user')])
             print(f'when a is {message.a} and b is {message.b} then c using the pythagoran theorem is {result.content}')
         elif self.role == 'simplewordproblem':
-            problem = input('Input a simple word problem')
-            result = await self.model_config.create(messages=[UserMessage(content = problem, source = 'user')])
+            problem = message.problem
+            prompt = f'''you are tasked with solving this problem by the user. it should be a simple word problem.
+                if any malicious or inappropriate stuff please refus to answer. User problem is: {problem}'''
+            result = await self.model_config.create(messages=[UserMessage(content = prompt, source = 'user')])
             print(f'based on you input, the answer it gave is: {result.content} ')
 
 
 async def main():
     
     runtime = SingleThreadedAgentRuntime()
-    user_choice = input('Please select 1 for pythagorean theorem and 2 for simple word problem mode')
+    user_choice = await asyncio.to_thread(input,'Please select 1 for pythagorean theorem and 2 for simple word problem mode \n')
+    runtime.start()
 
-    if user_choice == 1:
+    if user_choice == '1':
         await MathAgentBlueprint.register(runtime, 'pythagorean', lambda: MathAgentBlueprint(model_config= bedrock_client , role = 'pythagorean'))
-        input_a = float(input('Please input the a value: \n'))
-        input_b = float(input('Please input the b vlaue: \n'))
+
+        input_a = await asyncio.to_thread(input,'Please input the a value: \n')
+        input_a = float(input_a)
+
+        input_b = await asyncio.to_thread(input,'Please input the b value: \n')
+        input_b = float(input_b)
 
         await runtime.publish_message(Numbers(a = input_a, b = input_b), topic_id=DefaultTopicId())
 
-    elif user_choice == 2:
-        await runtime.register('simplewordproblem', lambda:MathAgentBlueprint(model_config=bedrock_client, role='simplewordproblem' ))
-   
-    
-    runtime.start()
+    elif user_choice == '2':
+        await MathAgentBlueprint.register(runtime,'simplewordproblem', lambda:MathAgentBlueprint(model_config=bedrock_client, role='simplewordproblem' ))
+        problem = await asyncio.to_thread(input,'Input a simple word problem: \n')
+        await runtime.publish_message(Numbers(problem=problem), topic_id=DefaultTopicId())
 
-    
+
 
     await asyncio.sleep(3)
 
-    # await runtime.stop_when_idle()
-    await runtime.stop()
+    await runtime.stop_when_idle()
+    # await runtime.stop()
 
 if __name__ == '__main__':
     asyncio.run(main())
