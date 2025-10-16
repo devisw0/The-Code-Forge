@@ -25,7 +25,7 @@ bedrock_client = AnthropicBedrockChatCompletionClient(
     ),
     bedrock_info=BedrockInfo(
         aws_region="us-east-1",
-        # aws_profile_name="devan2"  # Try without this first - should auto-detect SSO
+        # aws_profile_name="devan2"  
     )
 )
 
