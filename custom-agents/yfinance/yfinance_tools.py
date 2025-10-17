@@ -15,8 +15,10 @@ def price(company:str):
     current_price = ticker.info.get('currentPrice')
    
     if current_price:
+        
         return f"The current price for {company} is {current_price}"
     else:
+
         return f"{company} is not a valid stock in yfinance"
     
 
@@ -39,7 +41,6 @@ def historical_data(company:str,period:str=None):
         if history.empty:
             return f"Error: No data found for ticker '{company}'. Please check the symbol and period."
             
-            # Return the data as a clean, LLM-friendly CSV string
         return history.to_csv()
 
     except Exception as e:
@@ -64,14 +65,13 @@ def get_option_dates(company: str):
         exp_dates = stock.options
 
         if exp_dates:
-            # Correctly slice to get the first 10 dates
+
             upcoming_dates = exp_dates[:10]
             
-            # Use an f-string to correctly insert the variable into the string
             return f"Found {len(upcoming_dates)} upcoming option dates for {company}: {upcoming_dates}"
         else:
             return f"No option dates found for '{company}'. The stock may not have options."
 
     except Exception as e:
-        # This catches any other errors, like an invalid ticker
+
         return f"Error: Failed to process ticker '{company}'. It may not exist. Details: {e}"

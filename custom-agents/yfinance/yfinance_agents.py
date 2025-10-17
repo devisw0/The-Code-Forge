@@ -3,7 +3,7 @@ from pydantic import Field, BaseModel
 from autogen_core import SingleThreadedAgentRuntime, DefaultTopicId, MessageContext, message_handler, default_subscription, RoutedAgent
 from autogen_ext.models.anthropic import AnthropicChatCompletionClient, BedrockInfo, AnthropicBedrockChatCompletionClient
 from autogen_core.models import ModelInfo
-from autogen_agentchat.messages import TextMessage  # Changed import
+from autogen_agentchat.messages import TextMessage 
 import boto3
 from yfinance_tools import price, historical_data, get_option_dates
 from autogen_agentchat.agents import AssistantAgent
@@ -84,7 +84,7 @@ class HistoricalAnalyzer(RoutedAgent):
     @message_handler
     async def process(self, message: StockPriceRequest, ctx: MessageContext) -> None:
 
-        print(f"[Historical Analyzer] Processing {message.company}...")
+        print(f"[Historical Analyzer] Processing {message.company}")
 
         response = await self.assistant.on_messages(
             [TextMessage(content=f"Get 1y historical data for {message.company}", source='user')], 
@@ -106,11 +106,11 @@ class OptionsTracker(RoutedAgent):
             tools=[get_option_dates],
             system_message="Get option expiration dates."
         )
-    
+   
     @message_handler
     async def process(self, message: StockPriceRequest, ctx: MessageContext) -> None:
 
-        print(f"[Options Tracker] Processing {message.company}...")
+        print(f"[Options Tracker] Processing {message.company}")
 
         response = await self.assistant.on_messages(
             [TextMessage(content=f"Get option dates for {message.company}", source='user')],  
