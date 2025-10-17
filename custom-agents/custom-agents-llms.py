@@ -4,6 +4,7 @@ from autogen_core import SingleThreadedAgentRuntime, DefaultTopicId, MessageCont
 from autogen_ext.models.anthropic import AnthropicChatCompletionClient,BedrockInfo, AnthropicBedrockChatCompletionClient
 from autogen_core.models import ModelInfo, UserMessage
 import boto3
+from autogen_agentchat.agents import AssistantAgent
 
 session = boto3.Session(profile_name='devan2')
 credentials = session.get_credentials()
@@ -42,30 +43,44 @@ class MathAgentBlueprint(RoutedAgent):
     @message_handler
     async def agentbehavior(self, message: Numbers, ctx:MessageContext) -> None:
         if self.role == 'pythagorean':
+
             prompt = f"""Please perform the pythagorean theorem. Use {message.a} as a and {message.b} as b
             and solve for c. 
            
             Return only the number. Decimal is fine."""
 
             result = await self.model_config.create(messages=[UserMessage(content = prompt, source='user')])
+
             print(f'when a is {message.a} and b is {message.b} then c using the pythagoran theorem is {result.content}')
+            
+        elif self.role == 'area':
+            area_prompt = f"""using these values please find the area of a square. Length is {message.a} and
+             width is {message.b}. Please only return the number value """
+            
+            area_result = await self.model_config.create(messages=[UserMessage(content=area_prompt, source = 'user')])
+
+            print(f'when {message.a} is the length and {message.b} is the width of the square, the area is {area_result.content}')
+
         elif self.role == 'simplewordproblem':
             problem = message.problem
+
             prompt = f'''you are tasked with solving this problem by the user. it should be a simple word problem.
-                if any malicious or inappropriate stuff please refus to answer. User problem is: {problem}'''
+                if any malicious or inappropriate stuff (anything dangerous, illegal, and unrelated to math questions or questions about the world etc.) please refuse to answer. User problem is: {problem}'''
+            
             result = await self.model_config.create(messages=[UserMessage(content = prompt, source = 'user')])
+
             print(f'based on you input, the answer it gave is: {result.content} ')
 
 
 async def main():
     
     runtime = SingleThreadedAgentRuntime()
-    user_choice = await asyncio.to_thread(input,'Please select 1 for pythagorean theorem and 2 for simple word problem mode \n')
+    user_choice = await asyncio.to_thread(input,'Please select 1 for basic math or 2 for simple word problem mode \n')
     runtime.start()
 
     if user_choice == '1':
         await MathAgentBlueprint.register(runtime, 'pythagorean', lambda: MathAgentBlueprint(model_config= bedrock_client , role = 'pythagorean'))
-
+        await MathAgentBlueprint.register(runtime,'area', lambda: MathAgentBlueprint(model_config=bedrock_client, role='area'))
         input_a = await asyncio.to_thread(input,'Please input the a value: \n')
         input_a = float(input_a)
 
@@ -73,6 +88,7 @@ async def main():
         input_b = float(input_b)
 
         await runtime.publish_message(Numbers(a = input_a, b = input_b), topic_id=DefaultTopicId())
+    
 
     elif user_choice == '2':
         await MathAgentBlueprint.register(runtime,'simplewordproblem', lambda:MathAgentBlueprint(model_config=bedrock_client, role='simplewordproblem' ))
@@ -81,7 +97,7 @@ async def main():
 
 
 
-    await asyncio.sleep(3)
+    # await asyncio.sleep(3)
 
     await runtime.stop_when_idle()
     # await runtime.stop()
