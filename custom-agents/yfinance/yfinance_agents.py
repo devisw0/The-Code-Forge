@@ -7,6 +7,7 @@ from autogen_agentchat.messages import TextMessage
 import boto3
 from yfinance_tools import price, historical_data, get_option_dates
 from autogen_agentchat.agents import AssistantAgent
+from fastmcp import Client
 
 
 session = boto3.Session(profile_name='devan2')

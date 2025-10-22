@@ -8,3 +8,4 @@ autogen-agentchat[bedrock]
 tiktoken
 duckduckgo-search
 beautifulsoup4
+fastmcp
