@@ -33,7 +33,7 @@ def get_breed_sub_breeds(dog_breed:str):
 @mcp_server.tool
 def get_breed_image_random(dog_breed:str):
    """
-   This tool will be used to get an image of a specified dog breed
+   This tool will be used to get a random image of a specified dog breed
    
    Args:
         dog_breed (str) this argument is used in the api request to get the image of the dog breed
@@ -43,5 +43,12 @@ def get_breed_image_random(dog_breed:str):
    url = 'https://dog.ceo/api/breed/{dog_breed}/images/random'
 
    image_request = requests.get(url=url)
+   image_request = image_request.json()
+
+   image_url = image_request['message']
+
+   return image_url
+
+
     
    
