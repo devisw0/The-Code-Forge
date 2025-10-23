@@ -9,6 +9,7 @@ def get_all_dog_breeds():
     url = 'https://dog.ceo/api/breeds/list/all'
     request = requests.get(url = url)
     formatted_request = request.json()
+    formatted_request = formatted_request.get('message', 'not available')
     
     return formatted_request
 
@@ -23,10 +24,10 @@ def get_breed_sub_breeds(dog_breed:str):
          
     Return: 
         subbreeds (list) this is a list of the subbreeds a specific dogbreed has. It may also have no subbreeds """
-    url = 'https://dog.ceo/api/breed/{dog_breed}/list'
+    url = f'https://dog.ceo/api/breed/{dog_breed}/list'
     request = requests.get(url = url)
     subbreeds = request.json()
-
+    subbreeds = subbreeds.get('message','not available')
     return subbreeds
 
 
@@ -40,15 +41,16 @@ def get_breed_image_random(dog_breed:str):
     Return: 
         We will return the image url which will be under vaue of the message key in the response """
    
-   url = 'https://dog.ceo/api/breed/{dog_breed}/images/random'
+   url = f'https://dog.ceo/api/breed/{dog_breed}/images/random'
 
    image_request = requests.get(url=url)
    image_request = image_request.json()
 
-   image_url = image_request['message']
+   image_url = image_request.get('message', 'not found')
 
    return image_url
 
 
     
-   
+if __name__ == "__main__":
+    mcp_server.run(transport="http", host="0.0.0.0", port=8000)
