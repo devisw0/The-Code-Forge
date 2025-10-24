@@ -51,6 +51,6 @@ def get_breed_image_random(dog_breed:str):
    return image_url
 
 
-    
+
 if __name__ == "__main__":
     mcp_server.run(transport="http", host="0.0.0.0", port=8000)
