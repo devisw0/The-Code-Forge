@@ -9,3 +9,4 @@ tiktoken
 duckduckgo-search
 beautifulsoup4
 fastmcp
+httpx
